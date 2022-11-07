@@ -98,6 +98,10 @@ def build_kmer_dict(fastq_file, kmer_size):
 
 
 def build_graph(kmer_dict):
+    digraph = nx.DiGraph()
+    for k_mer, occurence in kmer_dict.items():
+        digraph.add_edge(k_mer[:-1], k_mer[1:], weight = occurence)
+    return digraph
     pass
 
 
