@@ -246,12 +246,15 @@ def main():
     """
     # Get arguments
     args = get_arguments()
-    # graph = nx.DiGraph()
-    # graph.add_edges_from([(("AG", "TC"), ("CA", "GT")), (("AC", "TG"), ("CA", "GT")), (("CA", "GT"), ("AG", "TC")),
-    #     (("AG", "TC"), ("CG", "GC")), (("CG", "GC"), ("CG", "GC")), (("CG", "GC"), ("CT", "GA")), (("CT", "GA"), ("AT", "TC")),
-    #     (("CT", "GA"), ("AA", "TT"))])
-    # contig_list = get_contigs(graph, ["TC", "AC"], ["AT" , "AA"])
-    # print(contig_list)
+    graph = build_graph(build_kmer_dict(args.fastq_file, args.kmer_size))
+    simplify_bubbles(graph)
+    save_contigs(get_contigs(graph, get_starting_nodes(graph),
+                             get_sink_nodes(graph)), args.output_file)
+    # fonction non reussies
+    solve_entry_tips(graph, get_starting_nodes(graph))
+    solve_out_tips(graph, get_sink_nodes(graph))
+
+
     # Fonctions de dessin du graphe
     # A decommenter si vous souhaitez visualiser un petit 
     # graphe
