@@ -26,7 +26,7 @@ import statistics
 import textwrap
 import matplotlib.pyplot as plt
 matplotlib.use("Agg")
-from collections import OrderedDict
+from itertools import combinations
 
 __author__ = "Your Name"
 __copyright__ = "Universite Paris Diderot"
@@ -161,7 +161,21 @@ def solve_bubble(graph, ancestor_node, descendant_node):
     pass
 
 def simplify_bubbles(graph):
-    pass
+    bubble = False
+    list_pred = []
+    for n in graph.nodes():
+        list_pred = [e for e in graph.predecessors(n)]
+        if len(list(list_pred)) > 1:
+            for i in combinations(list_pred,2):
+                ancestor_node = nx.lowest_common_ancestor(graph,i[0],i[1])
+                if ancestor_node != None:
+                    bubble = True
+                    break
+        if bubble == True:
+            break
+    if bubble:
+        graph = simplify_bubbles(solve_bubble(graph,ancestor_node, n))
+    return graph
 
 def solve_entry_tips(graph, starting_nodes):
     pass
