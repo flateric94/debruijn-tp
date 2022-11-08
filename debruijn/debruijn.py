@@ -26,6 +26,7 @@ import statistics
 import textwrap
 import matplotlib.pyplot as plt
 matplotlib.use("Agg")
+from collections import OrderedDict
 
 __author__ = "Your Name"
 __copyright__ = "Universite Paris Diderot"
@@ -130,15 +131,34 @@ def solve_out_tips(graph, ending_nodes):
     pass
 
 def get_starting_nodes(graph):
+    roots = [v for v, d in graph.in_degree() if d == 0]
+    return roots
     pass
 
 def get_sink_nodes(graph):
+    leaves = [v for v, d in graph.out_degree() if d == 0]
+    return leaves
     pass
 
 def get_contigs(graph, starting_nodes, ending_nodes):
+    result = []
+    for i in starting_nodes:
+        for e in ending_nodes:
+            for paths in nx.all_simple_paths(graph, i, e):
+                contig=""
+                contig += paths[0][0]
+                if nx.has_path(graph,i,e):
+                    for node in paths:
+                        contig += node[-1]     
+                    result.append([contig, len(contig)])
+    return result
     pass
 
 def save_contigs(contigs_list, output_file):
+    with open(output_file, "w") as f:
+        for i in contigs_list:
+            f.write(f">contig_ len={i[1]}\n")
+            f.write(f"{textwrap.fill(i[0],width=80)}\n")
     pass
 
 
@@ -171,7 +191,12 @@ def main():
     """
     # Get arguments
     args = get_arguments()
-
+    # graph = nx.DiGraph()
+    # graph.add_edges_from([(("AG", "TC"), ("CA", "GT")), (("AC", "TG"), ("CA", "GT")), (("CA", "GT"), ("AG", "TC")),
+    #     (("AG", "TC"), ("CG", "GC")), (("CG", "GC"), ("CG", "GC")), (("CG", "GC"), ("CT", "GA")), (("CT", "GA"), ("AT", "TC")),
+    #     (("CT", "GA"), ("AA", "TT"))])
+    # contig_list = get_contigs(graph, ["TC", "AC"], ["AT" , "AA"])
+    # print(contig_list)
     # Fonctions de dessin du graphe
     # A decommenter si vous souhaitez visualiser un petit 
     # graphe
