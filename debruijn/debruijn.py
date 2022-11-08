@@ -107,11 +107,41 @@ def build_graph(kmer_dict):
 
 
 def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+    for path in path_list:
+        if delete_entry_node and delete_sink_node:
+            # supprime tous les noeuds du chemin
+            graph.remove_nodes_from(path)
+        if delete_entry_node and not delete_sink_node:
+            # supprime tous les noeuds du chemin, sauf le dernier
+            graph.remove_nodes_from(path[:len(path)-1])
+        if not delete_entry_node and delete_sink_node:
+            # supprime tout les noeuds du chemin, sauf le premier
+            graph.remove_nodes_from(path[1:len(path)])
+        if not delete_entry_node and not delete_sink_node:
+            # supprime tout les noeuds du chemin, sauf le premier et le dernier
+            graph.remove_nodes_from(path[1:len(path)-1])
+    return graph
     pass
 
 
 def select_best_path(graph, path_list, path_length, weight_avg_list, 
                      delete_entry_node=False, delete_sink_node=False):
+    ecart_type_weight = statistics.stdev(weight_avg_list)
+    ecart_type_lenght = statistics.stdev(path_length)
+    if (ecart_type_weight > 0):
+        best_path = weight_avg_list.index(max(weight_avg_list))
+        path_list.pop(best_path)
+        remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
+    if (ecart_type_weight == 0):
+        if (ecart_type_lenght > 0):
+            best_path = path_length.index(max(path_length))
+            path_list.pop(best_path)
+            remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
+        if (ecart_type_lenght == 0):
+            best_path = randint(0,len(path_length))
+            path_list.pop(best_path)
+            remove_paths(graph, path_list, delete_entry_node, delete_sink_node)
+    return graph
     pass
 
 def path_average_weight(graph, path):
@@ -119,6 +149,15 @@ def path_average_weight(graph, path):
     return statistics.mean([d["weight"] for (u, v, d) in graph.subgraph(path).edges(data=True)])
 
 def solve_bubble(graph, ancestor_node, descendant_node):
+    path_list = []
+    path_length = []
+    weight_avg_list = [] 
+    for path in nx.all_simple_paths(graph, ancestor_node, descendant_node):
+        path_list.append(path)
+        path_length.append(len(path))
+        weight_avg_list.append(path_average_weight(graph,path))
+    graph = select_best_path(graph, path_list, path_length, weight_avg_list)
+    return graph
     pass
 
 def simplify_bubbles(graph):
@@ -156,9 +195,11 @@ def get_contigs(graph, starting_nodes, ending_nodes):
 
 def save_contigs(contigs_list, output_file):
     with open(output_file, "w") as f:
+        j=0
         for i in contigs_list:
-            f.write(f">contig_ len={i[1]}\n")
+            f.write(f">contig_{j} len={i[1]}\n")
             f.write(f"{textwrap.fill(i[0],width=80)}\n")
+            j+=1
     pass
 
 
